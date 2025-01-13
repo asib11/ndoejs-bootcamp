@@ -1,38 +1,57 @@
 const express = require('express');
-const cookieParser = require('cookie-parser')
-const handler = require('./handle')
 
 const app = express();
+app.set('view engine', 'ejs');
 
-app.use(express.json())
-app.use(cookieParser())
-
-const adminRoute = express.Router();
-adminRoute.get('/dashboard', (req, res) =>{
-    console.log(req.baseUrl) // /admin
-    console.log(req.originalUrl) // /admin/dashboard
-    console.log(req.url) // /dashboard
-    res.send('this is dashboard')
-})
-
-app.use('/admin', adminRoute)
-
-app.get('/user/:id', (req, res) =>{
-    console.log(req.baseUrl);
-    console.log(req.originalUrl); // /user/2?filter=name
-    console.log(req.url); // /user/2?filter=name
-    console.log(req.params) // :id
-    console.log(req.query) // ?filter=name -> {filter: "name"}
-    console.log(req.cookies)
+app.get('/test', (req, res) =>{
     res.send('hello')
 })
 
+app.get('/about', (req, res) =>{
+    // console.log(res.headersSent);
+    // res.render('pages/about', {
+    //     name: 'bangladesh'
+    // }); // second parameter object is local
+    // console.log(res.headersSent);
+    // res.send('about'); // end response with data
+    // res.end(); // end response with data
+    // res.json({
+    //     name: 'Asib'
+    // });
+    // res.status() // id you use status method must use re.end() after this
+    // res.end()
+    // res.sendStatus(200) // it is send status code and end together
 
-app.post('/user/:id', (req, res) =>{
-    console.log(req.body) // body use only post method  and when we need data, use some parser like line 5
-    res.send('hello')
+    // res.format({
+    //     'text/plain': () =>{
+    //         res.send('hi....');
+    //     },
+    //     'text/html': () =>{
+    //         res.render('pages/about')
+    //     },
+    //     'application/json': () =>{
+    //         res.json({
+    //             message: "Asib",
+    //         })
+    //     },
+    //     default: () =>{
+    //         res.status(406).send('not acceptable')
+    //     }
+    // })
+
+    // res.cookie('name', 'Asib')
+    // res.end()
+
+    // res.location('/test') // developer can see where is the location for redirect
+    // res.end()
+
+    res.redirect('/test')
+    res.end()
+
+    // res.set('platform', 'asib'); // set header
+    // res.get('platform') // get header
 })
-app.get('/user2/:id',handler )
+
 
 app.listen(3000, () => {    
     console.log('Server is running on port 3000');
