@@ -1,57 +1,32 @@
 const express = require('express');
 
 const app = express();
-app.set('view engine', 'ejs');
+const adminRouter = express.Router();
 
-app.get('/test', (req, res) =>{
-    res.send('hello')
+const loggerWrapper = (options) =>{
+     return function (req, res, next){
+        if(options.log) {
+            console.log(`${new Date(Date.now()).toLocaleDateString()} - ${req.method} - ${req.originalUrl} - ${req.protocol} - ${req.ip}`);
+            next();
+        }else {
+            throw new Error('Failed to log')
+        }
+    };
+};
+adminRouter.use(loggerWrapper({log: true}));
+
+adminRouter.get('/dashboard', (req, res) =>{
+    res.send('Dashboard')
 })
 
-app.get('/about', (req, res) =>{
-    // console.log(res.headersSent);
-    // res.render('pages/about', {
-    //     name: 'bangladesh'
-    // }); // second parameter object is local
-    // console.log(res.headersSent);
-    // res.send('about'); // end response with data
-    // res.end(); // end response with data
-    // res.json({
-    //     name: 'Asib'
-    // });
-    // res.status() // id you use status method must use re.end() after this
-    // res.end()
-    // res.sendStatus(200) // it is send status code and end together
+app.use('/admin', adminRouter);
 
-    // res.format({
-    //     'text/plain': () =>{
-    //         res.send('hi....');
-    //     },
-    //     'text/html': () =>{
-    //         res.render('pages/about')
-    //     },
-    //     'application/json': () =>{
-    //         res.json({
-    //             message: "Asib",
-    //         })
-    //     },
-    //     default: () =>{
-    //         res.status(406).send('not acceptable')
-    //     }
-    // })
+const errorMiddleware = (err, req, res, next) =>{
+    console.log(err.message);
+    res.status(500).send('There was a server side error')
+}
 
-    // res.cookie('name', 'Asib')
-    // res.end()
-
-    // res.location('/test') // developer can see where is the location for redirect
-    // res.end()
-
-    res.redirect('/test')
-    res.end()
-
-    // res.set('platform', 'asib'); // set header
-    // res.get('platform') // get header
-})
-
+adminRouter.use(errorMiddleware)
 
 app.listen(3000, () => {    
     console.log('Server is running on port 3000');
