@@ -1,41 +1,79 @@
 const express = require("express");
-const fs = require('fs');
+const multer = require("multer");
+const path = require("path");
 const app = express();
 
-//asynonous error
-app.get('/', (req, res, next) =>{
-  setTimeout(function() {
-    try {
-      console.log(a);
-    } catch (err) {
-      next(err)
-    }
-  } , 100)
+const UPLOADS_FOLDER = "./uploads/";
+
+// define the storage
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, UPLOADS_FOLDER);
+  },
+  filename: (req, file, cb) => {
+    const fileExt = path.extname(file.originalname);
+    const fileName =
+      file.originalname
+        .replace(fileExt, "")
+        .toLowerCase()
+        .split(" ")
+        .join("-") +
+      "-" +
+      Date.now();
+    console.log(file, fileName + fileExt);
+    cb(null, fileName + fileExt);
+  },
 });
 
-//  handle asynconous error by synconous error
-app.get('/class',[ (req, res, next) =>{ // we know that we can chain middleware by array
-  fs.readFile('/file-not-exist', 'utf-8', (err, data) =>{
-    console.log(data);
-    next(err)
-  })
-},
-(req, res, next) =>{ // sync errir by default error
-  console.log(data.property)
-}
-])
-
-// custom error message
-
-app.use((err, req, res, next) =>{
-  if(res.headerSent) {
-    next('there was a problem')
-  } else {
-    if (err.message){
-      res.status(500).send(err.message)
-    }else {
-      res.send('there was an error')
+var upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 1000000, //1MB
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.fieldname === "picture") {
+      if (
+        file.mimetype === "image/png" ||
+        file.mimetype === "image/jpg" ||
+        file.mimetype === "image/jpeg"
+      ) {
+        cb(null, true);
+      } else {
+        cb(new Error("only .jpg, .png or .jpeg format allowed!"));
+      }
+    } else if (file.fieldname === "doc") {
+      if (file.mimetype === "application/pdf") {
+        cb(null, true);
+      } else cb(new Error("only .pdf allowed!"));
+    } else {
+      cb(new Error("There was an unkonwn error"));
     }
+  },
+});
+
+app.post(
+  "/",
+  upload.fields([
+    { name: "picture", maxCount: 1 },
+    { name: "doc", maxCount: 2 },
+  ]),
+  (req, res) => {
+    console.log(req.files);
+    res.send("hello Asib");
+  }
+);
+
+// define error handler
+app.use((err, req, res, next) => {
+  if (err) {
+    if (err instanceof multer.MulterError) {
+      res.status(500).send("There was an upload error");
+    } else {
+      res.status(500).send(err.message);
+    }
+  } else {
+    res.send("success");
   }
 });
 
