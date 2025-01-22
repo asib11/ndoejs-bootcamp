@@ -14,6 +14,17 @@ route.get("/", async (req, res) => {
   }
 });
 
+//get active todo
+route.get("/active", async (req, res) => {
+  try {
+    const todo = new Todo();
+    const data = await todo.findActive();
+    res.status(200).json({data,});
+  } catch (err) {
+    res.status(500).json({ error: "Failed to retrieve todos" });
+  }
+});
+
 //get single todo
 route.get("/:id", async (req, res) => {
   try {
