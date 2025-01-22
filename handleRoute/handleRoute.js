@@ -7,8 +7,39 @@ const Todo = new mongoose.model("Todo", todoSchema); // always model varible nam
 //get all todo
 route.get("/", async (req, res) => {
   try {
-    const todos = await Todo.find().select({_id : 0, __v : 0, date : 0}).limit(3);
+    const todos = await Todo.find().select({_id : 0, __v : 0, date : 0})//.limit(3);
     res.status(200).json(todos);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to retrieve todos" });
+  }
+});
+
+//get active todo
+route.get("/active", async (req, res) => {
+  try {
+    const todo = new Todo();
+    const data = await todo.findActive();
+    res.status(200).json({data,});
+  } catch (err) {
+    res.status(500).json({ error: "Failed to retrieve todos" });
+  }
+});
+
+//get js static todo
+route.get("/js", async (req, res) => {
+  try {
+    const data = await Todo.findByJs();
+    res.status(200).json({data,});
+  } catch (err) {
+    res.status(500).json({ error: "Failed to retrieve todos" });
+  }
+});
+
+//get data by query helper
+route.get("/language", async (req, res) => {
+  try {
+    const data = await Todo.find().byLanguage('react');
+    res.status(200).json({data,});
   } catch (err) {
     res.status(500).json({ error: "Failed to retrieve todos" });
   }
