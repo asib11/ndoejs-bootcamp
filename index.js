@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const handleRoute = require('./handleRoute/handleRoute');
+const userHandler = require('./handleRoute/userHandler')
 
 require('dotenv').config()
 
@@ -13,6 +14,7 @@ mongoose
   .catch((err) => console.log(err));
 
 app.use('/todo', handleRoute);
+app.use('/user', userHandler);
 
 // function errorHandler(err, req, res, next){
 //   if(res.headerSent){
