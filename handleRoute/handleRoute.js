@@ -2,13 +2,17 @@ const express = require("express");
 const route = express.Router();
 const mongoose = require("mongoose");
 const todoSchema = require("../todoSchema/todoSchema");
-const checkLogin = require('../middleware/checkLogin')
+const userSchema = require("../todoSchema/userSchema");
+const checkLogin = require("../middleware/checkLogin");
 const Todo = new mongoose.model("Todo", todoSchema); // always model varible name convention start with capital and singular name and its a class so use new keyword
+const User = new mongoose.model("User", userSchema);
 
 //get all todo
-route.get("/",checkLogin, async (req, res) => {
+route.get("/", checkLogin, async (req, res) => {
   try {
-    const todos = await Todo.find().select({_id : 0, __v : 0, date : 0})//.limit(3);
+    const todos = await Todo.find({})
+      .populate("user", "name userName")
+      .select({ _id: 0, __v: 0, date: 0 }); //.limit(3);
     res.status(200).json(todos);
   } catch (err) {
     res.status(500).json({ error: "Failed to retrieve todos" });
@@ -20,7 +24,7 @@ route.get("/active", async (req, res) => {
   try {
     const todo = new Todo();
     const data = await todo.findActive();
-    res.status(200).json({data,});
+    res.status(200).json({ data });
   } catch (err) {
     res.status(500).json({ error: "Failed to retrieve todos" });
   }
@@ -30,7 +34,7 @@ route.get("/active", async (req, res) => {
 route.get("/js", async (req, res) => {
   try {
     const data = await Todo.findByJs();
-    res.status(200).json({data,});
+    res.status(200).json({ data });
   } catch (err) {
     res.status(500).json({ error: "Failed to retrieve todos" });
   }
@@ -39,8 +43,8 @@ route.get("/js", async (req, res) => {
 //get data by query helper
 route.get("/language", async (req, res) => {
   try {
-    const data = await Todo.find().byLanguage('react');
-    res.status(200).json({data,});
+    const data = await Todo.find().byLanguage("react");
+    res.status(200).json({ data });
   } catch (err) {
     res.status(500).json({ error: "Failed to retrieve todos" });
   }
@@ -61,10 +65,20 @@ route.get("/:id", async (req, res) => {
 });
 
 //post todo
-route.post("/", async (req, res) => {
+route.post("/", checkLogin, async (req, res) => {
   try {
-    const newTodo = new Todo(req.body);
+    const newTodo = new Todo({
+      ...req.body,
+      user: req.userID,
+    });
     const savedTodo = await newTodo.save(); // `save()` now returns a promise
+    await User.updateOne({
+      _id: req.userID,
+    },{
+      $push : {
+        todos : savedTodo._id
+      }
+    });
     res.status(200).json({
       message: "Todo was inserted successfully",
       todo: savedTodo,
