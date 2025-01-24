@@ -16,12 +16,15 @@ mongoose
 app.use('/todo', handleRoute);
 app.use('/user', userHandler);
 
-// function errorHandler(err, req, res, next){
-//   if(res.headerSent){
-//     return next(err);
-//   }
-//   res.status(500).json({error : err})
-// };
+// default error
+const errorHandler= (err, req, res, next) =>{
+  if(res.headerSent){
+    return next(err);
+  }
+  res.status(500).json({error : err})
+};
+
+app.use(errorHandler) //custom error use
 
 app.listen(3000, () => {
   console.log("Server is running on port 3000");
