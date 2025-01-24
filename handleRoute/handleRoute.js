@@ -2,10 +2,11 @@ const express = require("express");
 const route = express.Router();
 const mongoose = require("mongoose");
 const todoSchema = require("../todoSchema/todoSchema");
+const checkLogin = require('../middleware/checkLogin')
 const Todo = new mongoose.model("Todo", todoSchema); // always model varible name convention start with capital and singular name and its a class so use new keyword
 
 //get all todo
-route.get("/", async (req, res) => {
+route.get("/",checkLogin, async (req, res) => {
   try {
     const todos = await Todo.find().select({_id : 0, __v : 0, date : 0})//.limit(3);
     res.status(200).json(todos);
